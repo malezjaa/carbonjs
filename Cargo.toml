@@ -1,0 +1,24 @@
+[package]
+name = "CarbonJS"
+version = "0.1.0"
+edition = "2021"
+authors = [ "malezjaa" ]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.2.7", features = ["derive"] }
+colored = "2"
+git2 = "0.17.1"
+tempfile = "3.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+regex = "1.8.1"
+lazy_static = "1.4.0"
+tokio = { version = "1", features = ["full"] }
+octocrab = "0.21.0"
+reqwest = "0.11.17"
+
+[[bin]]
+name = "carbon"
+path = "src/main.rs"
