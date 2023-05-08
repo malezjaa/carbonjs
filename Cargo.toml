@@ -3,6 +3,9 @@ name = "CarbonJS"
 version = "0.1.0"
 edition = "2021"
 authors = [ "malezjaa" ]
+description = "A KubeJS script manager"
+license = "MIT"
+repository = "https://github.com/malezjaa/carbonjs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

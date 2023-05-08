@@ -24,7 +24,7 @@ struct Config {
 
 fn cli() -> Command {
     Command::new("carbon")
-        .about("A KubeJs script manager")
+        .about("A KubeJS script manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
