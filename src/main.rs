@@ -24,7 +24,7 @@ struct Config {
 
 fn cli() -> Command {
     Command::new("carbon")
-        .about("A KubeJs script managere")
+        .about("A KubeJs script manager")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 "[{}] {}",
                 "info".blue().bold(),
                 format!(
-                    "You can find all the packages in this github organisation: {}",
+                    "You can find all the packages in this github organization: {}",
                     "https://github.com/carbon-kjs".bold()
                 )
             );
