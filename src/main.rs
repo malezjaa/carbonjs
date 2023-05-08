@@ -42,7 +42,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let matches = cli().get_matches();
     let current_dir = std::env::current_dir()?;
     let kubejs_dir = current_dir.join("kubejs");
-    let scripts_dirs = ["server_scripts", "startup_scripts", "client_scripts"];
+    let scripts_dirs = [
+        "server_scripts",
+        "startup_scripts",
+        "client_scripts",
+        "assets",
+    ];
     let x = current_dir.join("kubejs");
 
     match matches.subcommand() {
@@ -106,6 +111,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         startup_scripts,
                         client_scripts,
                         server_scripts,
+                        assets,
                     )) => {
                         let files = (
                             temp_dir,
@@ -113,6 +119,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             startup_scripts,
                             client_scripts,
                             server_scripts,
+                            assets,
                         );
 
                         files::copy_files_to_dir_and_remove_temp_dir(

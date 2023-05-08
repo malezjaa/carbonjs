@@ -22,6 +22,7 @@ struct Files {
     startup_scripts: Vec<PathBuf>,
     client_scripts: Vec<PathBuf>,
     server_scripts: Vec<PathBuf>,
+    assets: Vec<PathBuf>,
 }
 
 pub fn check_if_folder_exists(folder_name: &PathBuf) -> Result<bool, std::io::Error> {
@@ -77,8 +78,9 @@ pub fn copy_files_to_dir_and_remove_temp_dir(
         Vec<PathBuf>,
         Vec<PathBuf>,
         Vec<PathBuf>,
+        Vec<PathBuf>,
     ),
-    scripts_dir: &[&str; 3],
+    scripts_dir: &[&str; 4],
     current_dir: &PathBuf,
 ) -> Result<bool, std::io::Error> {
     let temp_dir = files.0;
@@ -86,6 +88,7 @@ pub fn copy_files_to_dir_and_remove_temp_dir(
     let startup_scripts = files.2;
     let client_scripts = files.3;
     let server_scripts = files.4;
+    let assets = files.5;
 
     if !temp_dir.is_dir() {
         fs::create_dir(&temp_dir)?;

@@ -30,7 +30,8 @@ fn find_scripts_folder(entry: DirEntry) -> Option<PathBuf> {
             Some(name)
                 if name == "startup_scripts"
                     || name == "client_scripts"
-                    || name == "server_scripts" =>
+                    || name == "server_scripts"
+                    || name == "assets" =>
             {
                 Some(path.to_owned())
             }
@@ -48,6 +49,7 @@ pub fn get_files_from_repo(
 ) -> Result<
     (
         PathBuf,
+        Vec<PathBuf>,
         Vec<PathBuf>,
         Vec<PathBuf>,
         Vec<PathBuf>,
@@ -79,6 +81,7 @@ pub fn get_files_from_repo(
     let mut startup_scripts = Vec::new();
     let mut client_scripts = Vec::new();
     let mut server_scripts = Vec::new();
+    let mut assets = Vec::new();
     for entry in fs::read_dir(repo.workdir().unwrap())
         .map_err(|e| format!("Failed to read directory: {}", e))?
     {
@@ -89,6 +92,7 @@ pub fn get_files_from_repo(
                 "startup_scripts" => startup_scripts.push(path),
                 "client_scripts" => client_scripts.push(path),
                 "server_scripts" => server_scripts.push(path),
+                "assets" => assets.push(path),
                 _ => {}
             }
         }
@@ -100,6 +104,7 @@ pub fn get_files_from_repo(
         startup_scripts,
         client_scripts,
         server_scripts,
+        assets,
     ))
 }
 
