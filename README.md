@@ -20,7 +20,7 @@ A KubeJS script manager
 
 ```bash
     1. Install rust.
-    2. 
+    2. `cargo install CarbonJS` - case sensitive
 ```
     
 
