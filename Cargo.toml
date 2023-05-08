@@ -1,6 +1,6 @@
 [package]
-name = "CarbonJS"
-version = "0.1.0"
+name = "carbonjs"
+version = "0.1.1"
 edition = "2021"
 authors = [ "malezjaa" ]
 description = "A KubeJS script manager"
