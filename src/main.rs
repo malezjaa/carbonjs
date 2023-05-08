@@ -6,7 +6,6 @@ use clap::{arg, Arg, Command};
 
 use colored::Colorize;
 use github::get_json_from_github;
-use octocrab::Octocrab;
 use serde::Deserialize;
 use serde_json::from_str;
 
