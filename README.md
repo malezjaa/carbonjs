@@ -33,8 +33,6 @@ Please adhere to this project's `code of conduct`.
 
 ## Usage
 
-#### List
-
 ```http
   carbon <command>
 ```
