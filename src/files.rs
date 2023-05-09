@@ -113,7 +113,7 @@ pub fn copy_files_to_dir_and_remove_temp_dir(
             format!("The version of the script does not match the version of the minecraft version in your instance.")
         );
 
-        return panic!();
+        return Ok(false);
     }
 
     if !config.modloaders.contains(&package.modloader) {
@@ -123,7 +123,7 @@ pub fn copy_files_to_dir_and_remove_temp_dir(
             format!("Your current modloader does not match the modloader of the script.")
         );
 
-        return panic!();
+        return Ok(false);
     }
 
     match check_if_dependency_exists(&config.name, &current_dir) {
@@ -194,7 +194,7 @@ pub fn copy_files_to_dir_and_remove_temp_dir(
                     );
                     add_dependency(&config, &current_dir).unwrap();
                 } else {
-                    panic!("Error: {}", e);
+                    return Ok(false);
                 }
             }
 
@@ -278,7 +278,7 @@ pub fn copy_kjspkg_package(
                     "error".red().bold(),
                     format!("The version of the script does not match any of the minecraft versions in your instance.")
                 );
-            panic!();
+            return Ok(false);
         }
     } else {
         println!(
@@ -286,7 +286,7 @@ pub fn copy_kjspkg_package(
             "error".red().bold(),
             format!("The version of the script is not recognized.")
         );
-        panic!();
+        return Ok(false);
     }
 
     if !config.modloaders.contains(&package.modloader) {
@@ -296,7 +296,7 @@ pub fn copy_kjspkg_package(
             format!("Your current modloader does not match the modloader of the script.")
         );
 
-        return panic!();
+        return Ok(false);
     }
 
     if let Err(e) = add_kjspkg_dependency(&config, &current_dir, std::string::String::from(name)) {
@@ -342,7 +342,7 @@ pub fn create_hidden_folder(kubejs_dir: &PathBuf) -> Result<bool, std::io::Error
     Ok((true))
 }
 
-pub fn remove_package(package_name: &str, current_dir: &PathBuf) -> std::io::Result<()> {
+pub fn remove_package(package_name: &str, current_dir: &PathBuf) -> Result<bool, std::io::Error> {
     let current_dir = std::env::current_dir().unwrap();
     let carbon_path = current_dir.join("kubejs").join("carbon.package.json");
     let kubejs_path = current_dir.join("kubejs");
@@ -387,18 +387,18 @@ pub fn remove_package(package_name: &str, current_dir: &PathBuf) -> std::io::Res
                 "success".bright_green().bold(),
                 format!("Successfully removed {}", package_name)
             );
-            return panic!();
+            return Ok(false);
         } else {
             println!(
                 "[{}] {}",
                 "error".red().bold(),
                 format!("Package {} not found in dependencies", package_name)
             );
-            return panic!();
+            return Ok(false);
         }
     }
 
-    Ok(())
+    Ok(true)
 }
 
 fn remove_files_in_dir(dir_path: &Path) {

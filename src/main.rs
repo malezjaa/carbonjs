@@ -100,7 +100,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             "error".red().bold(),
                             format!("Version format is not correct. It should look someting like this: 1.0.0 or 3.12")
                         );
-                        panic!();
+                        return Ok(());
                     }
                 }
             }
@@ -182,7 +182,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 format!("This script does not exist or this is caused by another thing. Make sure you typed the name correctly. {e}")
                             );
 
-                        return panic!();
+                        return Ok(());
                     }
                 },
                 Ok(false) => {
@@ -217,7 +217,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 "error".red().bold(),
                                 format!("Version format is not correct. It should look someting like this: 1.0.0 or 3.12")
                             );
-                        panic!();
+                        return Ok(());
                     }
                 }
             }
