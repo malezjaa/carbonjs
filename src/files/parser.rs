@@ -89,7 +89,7 @@ pub fn read_package_json(file_path: PathBuf) -> Result<Package, std::io::Error> 
         println!(
             "[{}] {}",
             "error".red().bold(),
-            format!("Package's configuration file is empty. Or does not exist. Please create one with minecraft version and modloader.")
+            format!("KubeJS (kubejs/carbon.package.json) configuration file is empty. Or does not exist. Please create one with minecraft version (eg. 'version': '1.19.2) and modloader.")
         );
 
         return panic!();

@@ -179,7 +179,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         println!(
                                 "[{}] {}",
                                 "error".red().bold(),
-                                format!("This is script does not exist. Make sure you typed the name correctly. {}", e)
+                                format!("This script does not exist or this is caused by another thing. Make sure you typed the name correctly. ")
                             );
 
                         return panic!();
