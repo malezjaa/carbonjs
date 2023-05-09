@@ -10,7 +10,7 @@ A KubeJS script manager
 - ⚙️ Version control
 - 📁 Constantly new scripts being added
 - ✅ Easy to use
-- 🧱 Compatibility with [KJSPKG](https://github.com/orgs/gcatkjspkgs/repositories?type=all) packages.
+- 🧱 Compatibility with [KJSPKG](https://github.com/orgs/gcatkjspkgs/repositories?type=all) packages. (`carbon add kjspkg:<script_name>` script name corresponds to the repository from [KJSPKG](https://github.com/orgs/gcatkjspkgs/repositories?type=all))
 
 ## Installation
 
