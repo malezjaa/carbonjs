@@ -306,7 +306,7 @@ pub fn copy_kjspkg_package(
                 "info".blue().bold(),
                 format!("'kjspkg_dependencies' section not found, adding it...",)
             );
-            add_kjspkg_dependency(&config, &current_dir, std::string::String::from(name)).unwrap();
+            add_kjspkg_dependency(&config, &current_dir, std::string::String::from(name));
         } else {
             panic!("Error: {}", e);
         }
@@ -354,6 +354,12 @@ pub fn remove_package(package_name: &str, current_dir: &PathBuf) -> std::io::Res
     if let Some(deps) = carbon_json.get_mut("dependencies") {
         if deps.get(package_name).is_some() {
             deps[package_name] = Value::Null;
+            if let Some(deps) = carbon_json
+                .get_mut("dependencies")
+                .and_then(Value::as_object_mut)
+            {
+                deps.remove(package_name);
+            }
             carbon_data = serde_json::to_string_pretty(&carbon_json).unwrap();
             fs::write(&carbon_path, carbon_data)?;
 

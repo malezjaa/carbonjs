@@ -71,7 +71,9 @@ pub fn get_files_from_repo(
     let carbon_folder = kubejs_dir.join("carbon").join(repo_name);
 
     let repo = builder.clone(repo_url, temp_dir.path())?;
-    builder.clone(repo_url, carbon_folder.as_path())?;
+    if !carbon_folder.exists() {
+        builder.clone(repo_url, carbon_folder.as_path())?;
+    }
 
     let mut carbon_files = Vec::new();
     for entry in fs::read_dir(repo.workdir().unwrap())
