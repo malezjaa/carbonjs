@@ -1,5 +1,6 @@
 #![allow(unused)]
 use std::path::PathBuf;
+use std::time::Duration;
 use std::{error::Error, ffi::OsString};
 
 use clap::{arg, Arg, Command};
@@ -9,13 +10,15 @@ use github::get_json_from_github;
 use serde::Deserialize;
 use serde_json::from_str;
 
-use crate::files::create_hidden_folder;
+use crate::files::create_carbon_folder;
 use crate::{files::check_if_folder_exists, github::get_files_from_repo};
 
 mod dependencies;
 mod files;
 mod github;
 mod utils;
+
+use update_informer::{registry, Check};
 
 #[derive(Deserialize)]
 struct Config {
@@ -54,31 +57,57 @@ async fn main() -> Result<(), Box<dyn Error>> {
     ];
     let x = current_dir.join("kubejs");
 
+    let pkg_name = "CarbonJS";
+    let current_version = "0.1.7";
+
+    let informer =
+        update_informer::new(registry::Crates, pkg_name, current_version).interval(Duration::ZERO);
+
+    if let Ok(Some(new_version)) = informer.check_version() {
+        println!(
+            "[{}] A new release of {pkg_name} is available: v{current_version} -> {new_version}",
+            "info".blue().bold(),
+        );
+    }
+
     match matches.subcommand() {
         Some(("list", sub_matches)) => {
             println!(
                 "[{}] {}",
                 "info".blue().bold(),
                 format!(
-                    "You can find all the packages in this github organization: {}",
-                    "https://github.com/carbon-kjs".bold()
+                    "You can find all the packages in this github organization: {}. \n You can find kjspkg packages in this github organization: {}",
+                    "https://github.com/carbon-kjs".bold(), "https://github.com/gcatkjspkgs".bold()
                 )
             );
             Ok(())
         }
 
         Some(("remove", sub_matches)) => {
-            create_hidden_folder(&kubejs_dir)?;
+            create_carbon_folder(&kubejs_dir)?;
             let script_name: &str = sub_matches
                 .get_one::<String>("script_name")
                 .expect("Script name required.");
 
-            files::remove_package(script_name, &current_dir)?;
+            let is_carbon = if script_name.starts_with("kjspkg:") {
+                false
+            } else {
+                true
+            };
+
+            let name = script_name.trim_start_matches("kjspkg:");
+
+            if is_carbon {
+                files::remove_package(script_name, &current_dir)?;
+            } else {
+                files::remove_kjspkg_package(name, &current_dir);
+            }
+
             Ok(())
         }
 
         Some(("add", sub_matches)) => {
-            create_hidden_folder(&kubejs_dir)?;
+            create_carbon_folder(&kubejs_dir)?;
             let script_name: &str = sub_matches
                 .get_one::<String>("script_name")
                 .expect("Script name required.");

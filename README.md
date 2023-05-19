@@ -43,7 +43,7 @@ Please adhere to this project's `code of conduct`.
 | list | none | Return url to github org, where all packages are stored. |
 | add | <script_name> | Adds new script by name. |
 | info | <script_name> | Return info about package |
-
+| remove | <script_name> | Removes package |
 
 ## Authors
 

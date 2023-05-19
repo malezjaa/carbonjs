@@ -331,7 +331,7 @@ pub fn copy_kjspkg_package(
     return Ok((true));
 }
 
-pub fn create_hidden_folder(kubejs_dir: &PathBuf) -> Result<bool, std::io::Error> {
+pub fn create_carbon_folder(kubejs_dir: &PathBuf) -> Result<bool, std::io::Error> {
     let file_name = "carbon";
     let path = Path::new(kubejs_dir).join(file_name);
 
@@ -392,7 +392,69 @@ pub fn remove_package(package_name: &str, current_dir: &PathBuf) -> Result<bool,
             println!(
                 "[{}] {}",
                 "error".red().bold(),
-                format!("Package {} not found in dependencies", package_name)
+                format!("Package {} not found in dependencies. Make sure that if you're trying to remove kjpkg package to use 'kjspkg:<script_name>'.", package_name)
+            );
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
+pub fn remove_kjspkg_package(
+    package_name: &str,
+    current_dir: &PathBuf,
+) -> Result<bool, std::io::Error> {
+    let current_dir = std::env::current_dir().unwrap();
+    let carbon_path = current_dir.join("kubejs").join("carbon.package.json");
+    let kubejs_path = current_dir.join("kubejs");
+
+    let mut carbon_data = fs::read_to_string(&carbon_path).unwrap();
+    let mut carbon_json: Value = serde_json::from_str(&carbon_data).unwrap();
+    let carbon_folder = current_dir.join("kubejs").join("carbon").join(package_name);
+
+    if let Some(deps) = carbon_json.get_mut("kjspkg_dependencies") {
+        if deps.get(package_name).is_some() {
+            deps[package_name] = Value::Null;
+            if let Some(deps) = carbon_json
+                .get_mut("kjspkg_dependencies")
+                .and_then(Value::as_object_mut)
+            {
+                deps.remove(package_name);
+            }
+            carbon_data = serde_json::to_string_pretty(&carbon_json).unwrap();
+            fs::write(&carbon_path, carbon_data)?;
+
+            let paths = fs::read_dir(&carbon_folder).unwrap();
+
+            for path in paths {
+                let path = path.unwrap();
+                if path.file_type().unwrap().is_dir() {
+                    let dir_name = path.file_name();
+                    let dir_path = kubejs_path.join(dir_name);
+                    remove_files_in_dir(&dir_path);
+                } else {
+                    let file_name = path.file_name();
+                    let file_path = current_dir.join(&file_name);
+                    if file_path.exists() && file_path.is_file() {
+                        fs::remove_file(file_path).unwrap();
+                    }
+                }
+            }
+
+            fs::remove_dir_all(carbon_folder)?;
+
+            println!(
+                "[{}] {}",
+                "success".bright_green().bold(),
+                format!("Successfully removed {}", package_name)
+            );
+            return Ok(false);
+        } else {
+            println!(
+                "[{}] {}",
+                "error".red().bold(),
+                format!("Package {} not found in kjspkg_dependencies.", package_name)
             );
             return Ok(false);
         }

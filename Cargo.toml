@@ -1,6 +1,6 @@
 [package]
 name = "CarbonJS"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 authors = [ "malezjaa" ]
 description = "A KubeJS script manager"
@@ -18,6 +18,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 reqwest = "0.11.17"
+update-informer = "1.0.0"
 
 [[bin]]
 name = "carbon"
