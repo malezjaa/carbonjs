@@ -34,13 +34,13 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(Command::new("list").about("List of scripts"))
         .subcommand(Command::new("add").about("Add a script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts."),
+            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To add script from kjspkg, add `kjspkg:` before the name of the script."),
         ]))
         .subcommand(Command::new("info").about("Info about script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts."),
+            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To get info from kjspkg package, add `kjspkg:` before the name of the script."),
         ]))
         .subcommand(Command::new("remove").about("Remove script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts."),
+            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To remove kjspkg script, add `kjspkg:` before the name of the script."),
         ]))
 }
 
