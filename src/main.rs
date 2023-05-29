@@ -12,6 +12,7 @@ use serde_json::from_str;
 
 use crate::files::create_carbon_folder;
 use crate::{files::check_if_folder_exists, github::get_files_from_repo};
+use crate::{files::parser::{Config, read_config_json_publish}, files::parser};
 
 mod dependencies;
 mod files;
@@ -20,11 +21,6 @@ mod utils;
 
 use update_informer::{registry, Check};
 
-#[derive(Deserialize)]
-struct Config {
-    description: String,
-    author: String,
-}
 
 fn cli() -> Command {
     Command::new("carbon")
@@ -42,7 +38,11 @@ fn cli() -> Command {
         .subcommand(Command::new("remove").about("Remove script").args([
             Arg::new("script_name").help("name of the script. run 'list' for available scripts. To remove kjspkg script, add `kjspkg:` before the name of the script."),
         ]))
-}
+        .subcommand(Command::new("publish").about("Publish script").args([
+            Arg::new("script_name").help("name of the script."),
+            Arg::new("github_profile_link").help("link to your github profile (eg. https://github.com/malezjaa)")
+        ]))
+    }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -71,6 +71,42 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     match matches.subcommand() {
+        Some(("publish", sub_matches)) => {
+            let script_name: &str = sub_matches
+                .get_one::<String>("script_name")
+                .expect("Script name required.");
+
+            let github_profile_link: &str = sub_matches
+                .get_one::<String>("github_profile_link")
+                .expect("Github profile name required.");
+
+                println!("{:?}, {:?}", script_name, github_profile_link);
+
+                let config: parser::Config = parser::read_config_json_publish(current_dir.join("carbon.config.json"))?;
+
+                if (!config.name) {
+                                    println!(
+                        "[{}] {}",
+                        "error".red().bold(),
+                        format!("Package's name does not exists. Please provide one.")
+                    );
+
+                    return Ok(false);       
+                }
+
+                if (!config.modloader) {
+                                    println!(
+                        "[{}] {}",
+                        "error".red().bold(),
+                        format!("Modloader is not provided.")
+                    );
+
+                    return Ok(false);
+                }
+
+                Ok(())
+        }
+        
         Some(("list", sub_matches)) => {
             println!(
                 "[{}] {}",

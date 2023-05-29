@@ -57,6 +57,27 @@ pub fn read_config_json(file_path: PathBuf) -> Result<Config, std::io::Error> {
     Ok(person)
 }
 
+pub fn read_config_json_publish(file_path: PathBuf) -> Result<Config, std::io::Error> {
+    if !check_if_folder_exists(&file_path)? {
+        println!(
+            "[{}] {}",
+            "error".red().bold(),
+            format!(
+                "Package's configuration file does not exist."
+            )
+        );
+
+        return panic!();
+    }
+
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+
+    let person = serde_json::from_reader(reader)?;
+
+    Ok(person)
+}
+
 pub fn read_kjpkg_conifg(file_path: PathBuf) -> Result<KjspkgConfig, std::io::Error> {
     if !check_if_folder_exists(&file_path)? {
         println!(
