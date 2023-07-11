@@ -1,7 +1,9 @@
 
 # CarbonJS
 
-A KubeJS script manager
+A KubeJS script manager 
+
+**Docs** - https://docs.beanstech.tech/guides/carbon 
 
 ![CarbonJS logo](assets/logo.png)
 ## Features
@@ -10,7 +12,6 @@ A KubeJS script manager
 - ⚙️ Version control
 - 📁 Constantly new scripts being added
 - ✅ Easy to use
-- 🧱 Compatibility with [KJSPKG](https://github.com/orgs/gcatkjspkgs/repositories?type=all) packages. (`carbon add kjspkg:<script_name>` script name corresponds to the repository from [KJSPKG](https://github.com/orgs/gcatkjspkgs/repositories?type=all))
 
 ## Installation
 
@@ -30,20 +31,6 @@ A KubeJS script manager
 Contributions are always welcome!
 
 Please adhere to this project's `code of conduct`.
-
-
-## Usage
-
-```http
-  carbon <command>
-```
-
-| Commands | Arguments | Description                |
-| :-------- | :--------- | :------------------------- |
-| list | none | Return url to github org, where all packages are stored. |
-| add | <script_name> | Adds new script by name. |
-| info | <script_name> | Return info about package |
-| remove | <script_name> | Removes package |
 
 ## Authors
 

@@ -6,24 +6,25 @@ use std::{error::Error, ffi::OsString};
 use clap::{arg, Arg, Command};
 
 use colored::Colorize;
-use github::get_json_from_github;
+
 use serde::Deserialize;
 use serde_json::from_str;
+extern crate simplelog;
 
-use crate::files::create_carbon_folder;
-use crate::{files::check_if_folder_exists, github::get_files_from_repo};
+use simplelog::*;
 
-mod dependencies;
+mod api;
+mod config;
 mod files;
-mod github;
-mod utils;
+mod manager;
 
-use update_informer::{registry, Check};
-
-#[derive(Deserialize)]
-struct Config {
+#[derive(Debug, Deserialize)]
+pub struct PackageInfo {
+    repository: String,
+    version: String,
     description: String,
     author: String,
+    name: String,
 }
 
 fn cli() -> Command {
@@ -45,69 +46,45 @@ fn cli() -> Command {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() {
+    std::env::set_var("API_URL", "http://localhost:3000/api");
+
+    CombinedLogger::init(vec![TermLogger::new(
+        LevelFilter::Info,
+        Config::default(),
+        TerminalMode::Mixed,
+        ColorChoice::Auto,
+    )])
+    .unwrap();
     let matches = cli().get_matches();
-    let current_dir = std::env::current_dir()?;
-    let kubejs_dir = current_dir.join("kubejs");
-    let scripts_dirs = [
-        "server_scripts",
-        "startup_scripts",
-        "client_scripts",
-        "assets",
-    ];
-    let x = current_dir.join("kubejs");
-
-    let pkg_name = "CarbonJS";
-    let current_version = "0.1.7";
-
-    let informer =
-        update_informer::new(registry::Crates, pkg_name, current_version).interval(Duration::ZERO);
-
-    if let Ok(Some(new_version)) = informer.check_version() {
-        println!(
-            "[{}] A new release of {pkg_name} is available: v{current_version} -> {new_version}",
-            "info".blue().bold(),
-        );
-    }
 
     match matches.subcommand() {
         Some(("list", sub_matches)) => {
-            println!(
-                "[{}] {}",
-                "info".blue().bold(),
-                format!(
-                    "You can find all the packages in this github organization: {}. \n You can find kjspkg packages in this github organization: {}",
-                    "https://github.com/carbon-kjs".bold(), "https://github.com/gcatkjspkgs".bold()
-                )
-            );
-            Ok(())
+            info!(
+                "Full list of packages can be found here: {}",
+                "https://carbon.beanstech.tech"
+            )
         }
 
         Some(("remove", sub_matches)) => {
-            create_carbon_folder(&kubejs_dir)?;
             let script_name: &str = sub_matches
                 .get_one::<String>("script_name")
                 .expect("Script name required.");
 
-            let is_carbon = if script_name.starts_with("kjspkg:") {
-                false
-            } else {
-                true
-            };
-
-            let name = script_name.trim_start_matches("kjspkg:");
-
-            if is_carbon {
-                files::remove_package(script_name, &current_dir)?;
-            } else {
-                files::remove_kjspkg_package(name, &current_dir);
+            let res = api::get_package(script_name).await;
+            if res.is_err() {
+                error!("Package not found!");
+                return;
             }
 
-            Ok(())
+            let package_info: PackageInfo = serde_json::from_value(res.unwrap()).unwrap();
+            match manager::remove_package(package_info, script_name) {
+                Ok(_) => {}
+                Err(e) => error!("Error removing package: {}", e),
+            }
         }
 
         Some(("add", sub_matches)) => {
-            create_carbon_folder(&kubejs_dir)?;
             let script_name: &str = sub_matches
                 .get_one::<String>("script_name")
                 .expect("Script name required.");
@@ -124,104 +101,30 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 match valid_version.len() {
                     2 | 3 => {}
                     _ => {
-                        println!(
-                            "[{}] {}",
-                            "error".red().bold(),
-                            format!("Version format is not correct. It should look someting like this: 1.0.0 or 3.12")
-                        );
-                        return Ok(());
+                        error!("Version format is not correct. It should look someting like this: 1.0.0 or 3.12");
+                        return;
                     }
                 }
             }
 
-            println!(
-                "[{}] {}",
-                "info".blue().bold(),
-                format!("Cloning {script_name}.",)
-            );
-
-            let branch: &str = match &version {
-                Some(ver) => ver,
-                None => "",
-            };
-
-            let name = if script_name.starts_with("kjspkg:") {
-                "gcatkjspkgs"
-            } else {
-                "carbon-kjs"
-            };
-
-            let is_carbon = if script_name.starts_with("kjspkg:") {
-                false
-            } else {
-                true
-            };
-
-            let repo_name = parts[0].trim_start_matches("kjspkg:");
-            let repo_url = format!("https://github.com/{}/{}", name, repo_name);
-
-            match check_if_folder_exists(&kubejs_dir) {
-                Ok(true) => match github::get_files_from_repo(
-                    &repo_url,
-                    branch,
-                    &kubejs_dir,
-                    name,
-                    is_carbon,
-                    repo_name,
-                ) {
-                    Ok((
-                        temp_dir,
-                        carbon_files,
-                        startup_scripts,
-                        client_scripts,
-                        server_scripts,
-                        assets,
-                    )) => {
-                        let files = (
-                            temp_dir,
-                            carbon_files,
-                            startup_scripts,
-                            client_scripts,
-                            server_scripts,
-                            assets,
-                        );
-
-                        if is_carbon {
-                            files::copy_files_to_dir_and_remove_temp_dir(
-                                files,
-                                &scripts_dirs,
-                                &current_dir.join("kubejs"),
-                            )
-                            .expect("Failed to copy files to dir and remove temp dir.");
-                        } else {
-                            files::copy_kjspkg_package(
-                                files,
-                                &scripts_dirs,
-                                &current_dir.join("kubejs"),
-                                repo_name,
-                                is_carbon,
-                            )
-                            .expect("Failed to copy files to dir and remove temp dir.");
-                        }
-                    }
-                    Err(e) => {
-                        println!(
-                                "[{}] {}",
-                                "error".red().bold(),
-                                format!("This script does not exist or this is caused by another thing. Make sure you typed the name correctly. {e}")
-                            );
-
-                        return Ok(());
-                    }
-                },
-                Ok(false) => {
-                    println!("[{}] {}", "error".red().bold(), format!("KubeJS folder does not exist. Install KubeJS and run minecraft. After that, run this command again."));
-                }
-                Err(e) => {
-                    // error message is already printed by check_if_folder_exists()
-                }
+            let res = api::get_package(parts.get(0).unwrap()).await;
+            if res.is_err() {
+                error!("Package not found!");
+                return;
             }
-            Ok(())
+
+            let package_info: PackageInfo = serde_json::from_value(res.unwrap()).unwrap();
+
+            match manager::add_package(
+                package_info,
+                parts.get(0).unwrap_or(&""),
+                version.unwrap_or(""),
+            )
+            .await
+            {
+                Ok(_) => {}
+                Err(e) => error!("Error adding package: {}", e),
+            }
         }
 
         Some(("info", sub_matches)) => {
@@ -229,50 +132,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .get_one::<String>("script_name")
                 .expect("Script name required.");
 
-            let parts: Vec<&str> = script_name.split('@').collect();
-
-            let version: Option<&str> = parts.get(1).cloned();
-
-            if let Some(ver) = version {
-                let valid_version = ver
-                    .split('.')
-                    .filter(|s| s.chars().all(char::is_numeric))
-                    .collect::<Vec<&str>>();
-                match valid_version.len() {
-                    2 | 3 => {}
-                    _ => {
-                        println!(
-                                "[{}] {}",
-                                "error".red().bold(),
-                                format!("Version format is not correct. It should look someting like this: 1.0.0 or 3.12")
-                            );
-                        return Ok(());
-                    }
-                }
+            let package = api::get_package(script_name).await;
+            if package.is_err() {
+                error!("Package not found!");
+                return;
             }
 
-            let branch: &str = match &version {
-                Some(ver) => ver,
-                None => "master",
-            };
+            let package_info: PackageInfo = serde_json::from_value(package.unwrap()).unwrap();
 
-            let name = if script_name.starts_with("kjspkg:") {
-                "gcatkjspkgs"
-            } else {
-                "carbon-kjs"
-            };
-
-            let is_carbon = if script_name.starts_with("kjspkg:") {
-                false
-            } else {
-                true
-            };
-
-            let repo_name = parts[0].trim_start_matches("kjspkg:");
-
-            let x = get_json_from_github(repo_name, branch, name, is_carbon).await?;
-
-            Ok(())
+            println!("{}: {}", "Name:".bold().blue(), package_info.name);
+            println!("{}: {}", "Version:".bold().blue(), package_info.version);
+            println!(
+                "{}: {}",
+                "Description:".bold().blue(),
+                package_info.description
+            );
+            println!(
+                "{}: {}",
+                "Repository".bold().blue(),
+                package_info.repository
+            );
         }
 
         _ => unreachable!(),
