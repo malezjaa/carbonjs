@@ -43,11 +43,15 @@ fn cli() -> Command {
         .subcommand(Command::new("remove").about("Remove script").args([
             Arg::new("script_name").help("name of the script. run 'list' for available scripts. To remove kjspkg script, add `kjspkg:` before the name of the script."),
         ]))
-}
+        .subcommand(Command::new("publish").about("Publish script").args([
+            Arg::new("script_name").help("name of the script."),
+            Arg::new("github_profile_link").help("link to your github profile (eg. https://github.com/malezjaa)")
+        ]))
+    }
 
 #[tokio::main]
 async fn main() {
-    std::env::set_var("API_URL", "http://localhost:3000/api");
+    std::env::set_var("API_URL", "https://carbon.beanstech.tech/api");
 
     CombinedLogger::init(vec![TermLogger::new(
         LevelFilter::Info,
@@ -59,6 +63,42 @@ async fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
+        Some(("publish", sub_matches)) => {
+            let script_name: &str = sub_matches
+                .get_one::<String>("script_name")
+                .expect("Script name required.");
+
+            let github_profile_link: &str = sub_matches
+                .get_one::<String>("github_profile_link")
+                .expect("Github profile name required.");
+
+                println!("{:?}, {:?}", script_name, github_profile_link);
+
+                let config: parser::Config = parser::read_config_json_publish(current_dir.join("carbon.config.json"))?;
+
+                if (!config.name) {
+                                    println!(
+                        "[{}] {}",
+                        "error".red().bold(),
+                        format!("Package's name does not exists. Please provide one.")
+                    );
+
+                    return Ok(false);       
+                }
+
+                if (!config.modloader) {
+                                    println!(
+                        "[{}] {}",
+                        "error".red().bold(),
+                        format!("Modloader is not provided.")
+                    );
+
+                    return Ok(false);
+                }
+
+                Ok(())
+        }
+        
         Some(("list", sub_matches)) => {
             info!(
                 "Full list of packages can be found here: {}",
