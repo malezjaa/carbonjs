@@ -34,20 +34,22 @@ fn cli() -> Command {
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .subcommand(Command::new("list").about("List of scripts"))
-        .subcommand(Command::new("add").about("Add a script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To add script from kjspkg, add `kjspkg:` before the name of the script."),
-        ]))
-        .subcommand(Command::new("info").about("Info about script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To get info from kjspkg package, add `kjspkg:` before the name of the script."),
-        ]))
-        .subcommand(Command::new("remove").about("Remove script").args([
-            Arg::new("script_name").help("name of the script. run 'list' for available scripts. To remove kjspkg script, add `kjspkg:` before the name of the script."),
-        ]))
-        .subcommand(Command::new("publish").about("Publish script").args([
-            Arg::new("script_name").help("name of the script."),
-            Arg::new("github_profile_link").help("link to your github profile (eg. https://github.com/malezjaa)")
-        ]))
-    }
+        .subcommand(
+            Command::new("add")
+                .about("Add a script")
+                .args([Arg::new("script_name").help("name of the script.")]),
+        )
+        .subcommand(
+            Command::new("info")
+                .about("Info about script")
+                .args([Arg::new("script_name").help("name of the script.")]),
+        )
+        .subcommand(
+            Command::new("remove")
+                .about("Remove script")
+                .args([Arg::new("script_name").help("name of the script.")]),
+        )
+}
 
 #[tokio::main]
 async fn main() {
