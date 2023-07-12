@@ -19,6 +19,7 @@ serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 reqwest = "0.11.17"
 update-informer = "1.0.0"
+simplelog = { version = "^0.12.1", features = ["paris"] }
 
 [[bin]]
 name = "carbon"

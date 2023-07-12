@@ -3,7 +3,7 @@ use std::any;
 use clap::Error;
 use git2::Object;
 use reqwest;
-const API_URL: &str = "http://localhost:3000/api";
+const API_URL: &str = "https://carbon.beanstech.tech/api";
 
 pub async fn get_packages() -> Result<(), reqwest::Error> {
     let response = reqwest::get(API_URL.to_owned() + "/packages").await?;
